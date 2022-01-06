@@ -12,52 +12,55 @@ function ConjuredItem(name, sell_in, quality) {
 
 var items = []
 
+const AGED_BRIE = 'Aged Brie';
+const SULFURAS = 'Sulfuras, Hand of Ragnaros';
+const BACKSTAGE_PASSES = 'Backstage passes to a TAFKAL80ETC concert';
+
 function update_quality() {
-  items.forEach((item) => {
-    const startingQuality = item.quality;
-    if (item.name != 'Aged Brie' && item.name != 'Backstage passes to a TAFKAL80ETC concert') {
-      if (item.quality > 0) {
-        if (item.name != 'Sulfuras, Hand of Ragnaros') {
-          item.quality = item.quality - 1
-        }
-      }
-    } else {
-      if (item.quality < 50) {
-        item.quality = item.quality + 1
-        if (item.name == 'Backstage passes to a TAFKAL80ETC concert') {
-          if (item.sell_in < 11) {
-            if (item.quality < 50) {
-              item.quality = item.quality + 1
-            }
-          }
-          if (item.sell_in < 6) {
-            if (item.quality < 50) {
-              item.quality = item.quality + 1
-            }
-          }
-        }
-      }
-    }
-    if (item.name != 'Sulfuras, Hand of Ragnaros') {
-      item.sell_in = item.sell_in - 1;
-    }
-    if (item.sell_in < 0) {
-      if (item.name != 'Aged Brie') {
-        if (item.name != 'Backstage passes to a TAFKAL80ETC concert') {
-          if (item.quality > 0) {
-            if (item.name != 'Sulfuras, Hand of Ragnaros') {
-              item.quality = item.quality - 1
-            }
-          }
-        } else {
-          item.quality = item.quality - item.quality
-        }
-      } else {
+  function update_normal_resources(item) {
+    item.sell_in = item.sell_in - 1;
+    switch (item.name) {
+      case BACKSTAGE_PASSES: {
         if (item.quality < 50) {
           item.quality = item.quality + 1
+          if (item.quality < 50 && item.sell_in < 5) {
+            item.quality = item.quality + 1
+          }
+          if (item.quality < 50 && item.sell_in < 10) {
+            item.quality = item.quality + 1
+          }
+        }
+        if (item.sell_in < 0) {
+          item.quality = 0;
+        }
+      }
+        break;
+      case AGED_BRIE: {
+        if (item.quality < 50) {
+          item.quality = item.quality + 1
+          if (item.quality < 50 && item.sell_in < 0) {
+            item.quality = item.quality + 1;
+          }
+        }
+      }
+        break;
+      default: {
+        if (item.quality > 0) {
+          item.quality = item.quality - 1
+          if (item.quality > 0 && item.sell_in < 0) {
+            item.quality = item.quality - 1
+          }
         }
       }
     }
+  }
+
+  items.forEach((item) => {
+    if (item.name === SULFURAS) {
+      return;
+    }
+    const startingQuality = item.quality;
+    update_normal_resources(item);
     if (item instanceof ConjuredItem) {
       const normalAmountDegraded = startingQuality - item.quality;
       const totalDegraded = normalAmountDegraded > 0 ? item.quality - normalAmountDegraded : item.quality;
