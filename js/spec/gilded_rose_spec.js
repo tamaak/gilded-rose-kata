@@ -3,11 +3,11 @@ describe("Gilded Rose", function () {
   const SULFURAS = 'Sulfuras, Hand of Ragnaros';
   const BACKSTAGE_PASSES = 'Backstage passes to a TAFKAL80ETC concert';
   function rollAD20() {
-    return Math.floor(Math.random() * 19) + 1;
+    return Math.floor(Math.random() * 20) + 1;
   }
 
   function rollAD5() {
-    return Math.floor(Math.random() * 4) + 1;
+    return Math.floor(Math.random() * 5) + 1;
   }
 
   describe("when a normal item", function () {
@@ -63,23 +63,26 @@ describe("Gilded Rose", function () {
       expect(items[0].sell_in).toEqual(expectedSellIn);
     });
 
-    // cheese lasts forever?!
-    // it("should degrade faster after sell_in is 0", function () {
-    //   const randomQuality = rollAD20() + 1;
-    //   const expectedQuality = randomQuality - 2;
-    //   items = [new Item(AGED_BRIE, 0, randomQuality)];
-    //
-    //   update_quality();
-    //
-    //   expect(items[0].quality).toEqual(expectedQuality);
-    // });
+    it("cheese is really good passed the sell by data", function () {
+      const randomQuality = rollAD20() + 1;
+      const expectedQuality = randomQuality + 2;
+      items = [new Item(AGED_BRIE, 0, randomQuality)];
+
+      update_quality();
+
+      expect(items[0].quality).toEqual(expectedQuality);
+    });
 
     it("should not upgrade higher than 50", function () {
-      items = [new Item(AGED_BRIE, rollAD20(), 50)];
+      items = [
+        new Item(AGED_BRIE, rollAD20(), 50),
+        new Item(AGED_BRIE, 0, 49),
+      ];
 
       update_quality();
 
       expect(items[0].quality).toEqual(50);
+      expect(items[1].quality).toEqual(50);
     });
   });
 
@@ -144,11 +147,23 @@ describe("Gilded Rose", function () {
 
       expect(items[0].quality).toEqual(0);
     });
+
+    it("should not upgrade higher than 50", function () {
+      items = [
+        new Item(BACKSTAGE_PASSES, rollAD5(), 49),
+        new Item(BACKSTAGE_PASSES, rollAD5(), 48),
+      ];
+
+      update_quality();
+
+      expect(items[0].quality).toEqual(50);
+      expect(items[1].quality).toEqual(50);
+    });
   });
 
   describe("when a conjured item", function () {
     it("should decrease quality", function () {
-      const randomQuality = rollAD20();
+      const randomQuality = rollAD20() + 2;
       const expectedQuality = randomQuality - 2;
       items = [new ConjuredItem("foo", rollAD20(), randomQuality)];
 
@@ -168,7 +183,7 @@ describe("Gilded Rose", function () {
     });
 
     it("should degrade faster after sell_in is 0", function () {
-      const randomQuality = rollAD20() + 1;
+      const randomQuality = rollAD20() + 4;
       const expectedQuality = randomQuality - 4;
       items = [new ConjuredItem("baz", 0, randomQuality)];
 
@@ -186,7 +201,6 @@ describe("Gilded Rose", function () {
 
       expect(items[0].quality).toEqual(expectedQuality);
     });
-
   });
 
   it("should not degrade below 0", function () {
